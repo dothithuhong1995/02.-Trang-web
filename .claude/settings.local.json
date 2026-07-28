@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"C:\\\\Users\\\\Acer\\\\OneDrive\\\\Desktop\\\\KGVHHCM.docx\" ./doc.docx)",
+      "Bash(unzip -o doc.docx -d doc_extract)",
+      "Bash(npm --version)",
+      "Bash(magick --version)",
+      "Bash(magick identify *)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const s=require\\('sharp'\\); s\\('doc_extract/word/media/image1.jpeg'\\).metadata\\(\\).then\\(m=>console.log\\(m.width,m.height\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Logo trường">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E8C86A"/>
+      <stop offset="1" stop-color="#B8941F"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="#C8102E" stroke="url(#ring)" stroke-width="4"/>
+  <circle cx="60" cy="60" r="47" fill="none" stroke="#E8C86A" stroke-width="1.5" opacity="0.7"/>
+  <!-- ngôi sao vàng -->
+  <path fill="#FBE28A" d="M60 24l6.9 14 15.4 2.2-11.1 10.9 2.6 15.3L60 59.2 46.2 66.4l2.6-15.3-11.1-10.9L53.1 38z"/>
+  <!-- quyển sách mở -->
+  <path fill="#FBF3E4" d="M32 78c8-4 18-4 28 0 10-4 20-4 28 0v14c-8-3-18-3-28 1-10-4-20-4-28-1z"/>
+  <path fill="none" stroke="#C8102E" stroke-width="1.5" d="M60 79v13"/>
+  <text x="60" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#FBE28A">LOGO</text>
+</svg>
