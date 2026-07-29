@@ -1,8 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { isAdmin } from "@/lib/auth";
+import {
+  createSupabaseServerClient,
+  supabaseConfigured,
+} from "@/lib/supabase/server";
 import { parseYouTube } from "@/lib/youtube";
 import type { MediaType } from "@/lib/types";
 
@@ -41,9 +45,27 @@ async function uploadToStorage(
 }
 
 async function ensureAdmin() {
-  if (!(await isAdmin())) {
-    throw new Error("Bạn cần đăng nhập quản trị để thực hiện thao tác này.");
+  const configured = supabaseConfigured();
+  let cookieNames = "(none)";
+  let detail = "";
+  try {
+    const store = await cookies();
+    const names = store
+      .getAll()
+      .map((c) => c.name)
+      .filter((n) => n.startsWith("sb-") || n.includes("auth"));
+    cookieNames = names.length ? names.join("|") : "(none)";
+
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (data?.user) return; // OK — đã đăng nhập
+    detail = error?.message ?? "no-user";
+  } catch (e) {
+    detail = "EXC:" + (e as Error).message;
   }
+  throw new Error(
+    `Chưa nhận diện Admin. [configured=${configured}] [cookies=${cookieNames}] [detail=${detail}]`
+  );
 }
 
 /** Tạo mới hoặc cập nhật một mục nội dung trong phòng. */
