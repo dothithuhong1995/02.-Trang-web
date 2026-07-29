@@ -16,15 +16,10 @@ export async function getCurrentUser() {
 
 /**
  * Kiểm tra người dùng hiện tại có quyền quản trị hay không.
- * Phiên bản v1: bất kỳ tài khoản đăng nhập hợp lệ nào cũng là Admin
- * (chỉ Admin mới có tài khoản). Có thể siết theo NEXT_PUBLIC_ADMIN_EMAIL.
+ * Phiên bản v1 (1 Admin): bất kỳ tài khoản Supabase đăng nhập hợp lệ nào cũng là Admin.
+ * (Chỉ Admin mới có tài khoản, nên không cần so khớp email.)
  */
 export async function isAdmin(): Promise<boolean> {
   const user = await getCurrentUser();
-  if (!user) return false;
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim().toLowerCase();
-  if (adminEmail) {
-    return user.email?.toLowerCase() === adminEmail;
-  }
-  return true;
+  return !!user;
 }

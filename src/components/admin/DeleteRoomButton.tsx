@@ -16,12 +16,12 @@ export function DeleteRoomButton({ slug, name }: { slug: string; name: string })
     )
       return;
     start(async () => {
-      try {
-        await deleteRoomAction(slug);
-        router.refresh();
-      } catch (e) {
-        alert((e as Error).message);
+      const res = await deleteRoomAction(slug);
+      if (res?.error) {
+        alert("Lỗi: " + res.error);
+        return;
       }
+      router.refresh();
     });
   }
   return (

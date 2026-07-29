@@ -4,17 +4,18 @@ import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { getRooms, getSettings } from "@/lib/data";
 import { saveSettingsAction, saveRoomAction } from "@/app/actions";
+import { ActionForm } from "@/components/admin/ActionForm";
 import { DeleteRoomButton } from "@/components/admin/DeleteRoomButton";
 import { Icon } from "@/components/icons";
 
 export const metadata = { title: "Bảng điều khiển quản trị" };
+export const dynamic = "force-dynamic";
 
 const input =
   "w-full rounded-lg border border-gold/40 bg-cream/40 px-3 py-2 text-sm outline-none focus:border-flag-red focus:ring-1 focus:ring-flag-red";
 const fileInput =
   "w-full rounded-lg border border-gold/40 bg-cream/40 px-3 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-flag-red file:px-3 file:py-1 file:text-white";
 const label = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#6a4a1a]";
-const saveBtn = "btn-home text-sm";
 
 export default async function AdminDashboard() {
   if (!(await isAdmin())) redirect("/admin/dang-nhap");
@@ -80,7 +81,7 @@ export default async function AdminDashboard() {
           <h2 className="mb-4 text-lg font-extrabold text-flag-red">
             Thông tin trường & Giao diện trang chủ
           </h2>
-          <form action={saveSettingsAction} className="space-y-5">
+          <ActionForm action={saveSettingsAction} submitLabel="Lưu thông tin" className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <span className={label}>Tên trường</span>
@@ -151,12 +152,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <button type="submit" className={saveBtn}>
-                Lưu thông tin
-              </button>
-            </div>
-          </form>
+          </ActionForm>
         </section>
 
         {/* Quản lý phòng */}
@@ -218,7 +214,11 @@ function RoomForm({
   isNew?: boolean;
 }) {
   return (
-    <form action={saveRoomAction} className="space-y-3">
+    <ActionForm
+      action={saveRoomAction}
+      submitLabel={isNew ? "Tạo phòng" : "Lưu phòng"}
+      className="space-y-3"
+    >
       <div className="grid gap-3 md:grid-cols-2">
         <div>
           <span className={label}>Mã phòng (slug, không dấu)</span>
@@ -263,11 +263,6 @@ function RoomForm({
         <input type="checkbox" name="enabled" defaultChecked={room?.enabled ?? true} />
         Hiển thị phòng này
       </label>
-      <div className="flex justify-end">
-        <button type="submit" className={saveBtn}>
-          {isNew ? "Tạo phòng" : "Lưu phòng"}
-        </button>
-      </div>
-    </form>
+    </ActionForm>
   );
 }

@@ -73,12 +73,12 @@ export function EditControls({
   function onDelete() {
     if (!confirm("Bạn có chắc muốn xóa mục này?")) return;
     start(async () => {
-      try {
-        await deleteItemAction(item.id, config.roomSlug);
-        router.refresh();
-      } catch (e) {
-        alert((e as Error).message);
+      const res = await deleteItemAction(item.id, config.roomSlug);
+      if (res?.error) {
+        alert("Lỗi: " + res.error);
+        return;
       }
+      router.refresh();
     });
   }
 
@@ -140,13 +140,13 @@ function EditorModal({
       fd.set("meta", JSON.stringify({ ...meta, year: y }));
     }
     start(async () => {
-      try {
-        await saveItemAction(fd);
-        onClose();
-        router.refresh();
-      } catch (err) {
-        setError((err as Error).message);
+      const res = await saveItemAction(fd);
+      if (res?.error) {
+        setError(res.error);
+        return;
       }
+      onClose();
+      router.refresh();
     });
   }
 

@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/data";
 import { LoginForm } from "@/components/LoginForm";
 
 export const metadata = { title: "Đăng nhập quản trị" };
+export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   if (await isAdmin()) redirect("/admin");
