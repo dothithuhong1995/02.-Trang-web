@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Item } from "@/lib/types";
 import { saveItemAction, deleteItemAction } from "@/app/actions";
+import { getAccessToken } from "@/lib/supabase/client";
 import { Icon } from "./icons";
 
 export interface EditorConfig {
@@ -73,7 +74,8 @@ export function EditControls({
   function onDelete() {
     if (!confirm("Bạn có chắc muốn xóa mục này?")) return;
     start(async () => {
-      const res = await deleteItemAction(item.id, config.roomSlug);
+      const token = await getAccessToken();
+      const res = await deleteItemAction(item.id, config.roomSlug, token);
       if (res?.error) {
         alert("Lỗi: " + res.error);
         return;
@@ -140,6 +142,8 @@ function EditorModal({
       fd.set("meta", JSON.stringify({ ...meta, year: y }));
     }
     start(async () => {
+      const token = await getAccessToken();
+      if (token) fd.set("access_token", token);
       const res = await saveItemAction(fd);
       if (res?.error) {
         setError(res.error);

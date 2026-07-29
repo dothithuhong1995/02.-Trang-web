@@ -8,3 +8,19 @@ export function createSupabaseBrowserClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
+
+/**
+ * Lấy "vé đăng nhập" (access token) của phiên hiện tại để gửi kèm mỗi thao tác ghi.
+ * Nhờ vậy máy chủ xác thực được Admin mà không phụ thuộc cookie.
+ */
+export async function getAccessToken(): Promise<string | null> {
+  try {
+    const supabase = createSupabaseBrowserClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}

@@ -1,12 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import {
-  createSupabaseServerClient,
-  supabaseConfigured,
-} from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseYouTube } from "@/lib/youtube";
 import type { MediaType } from "@/lib/types";
 
@@ -44,34 +40,39 @@ async function uploadToStorage(
   return { url: data.publicUrl, type };
 }
 
-async function ensureAdmin() {
-  const configured = supabaseConfigured();
-  let cookieNames = "(none)";
-  let detail = "";
+/**
+ * Xác thực quyền Admin. Ưu tiên "vé đăng nhập" (access token) do trình duyệt gửi
+ * kèm — cách này KHÔNG phụ thuộc cookie nên tránh được lỗi cookie không tới máy chủ.
+ * Nếu không có token thì dự phòng đọc phiên từ cookie.
+ */
+async function ensureAdmin(token?: string | null) {
+  // 1) Xác thực bằng access token (đáng tin cậy nhất)
+  if (token) {
+    try {
+      const admin = createSupabaseAdminClient();
+      const { data } = await admin.auth.getUser(token);
+      if (data?.user) return;
+    } catch {
+      // rơi xuống dự phòng cookie
+    }
+  }
+  // 2) Dự phòng: đọc phiên từ cookie
   try {
-    const store = await cookies();
-    const names = store
-      .getAll()
-      .map((c) => c.name)
-      .filter((n) => n.startsWith("sb-") || n.includes("auth"));
-    cookieNames = names.length ? names.join("|") : "(none)";
-
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (data?.user) return; // OK — đã đăng nhập
-    detail = error?.message ?? "no-user";
-  } catch (e) {
-    detail = "EXC:" + (e as Error).message;
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) return;
+  } catch {
+    // bỏ qua
   }
   throw new Error(
-    `Chưa nhận diện Admin. [configured=${configured}] [cookies=${cookieNames}] [detail=${detail}]`
+    `Bạn cần đăng nhập quản trị để thực hiện thao tác này. (vé=${token ? "có" : "thiếu"})`
   );
 }
 
 /** Tạo mới hoặc cập nhật một mục nội dung trong phòng. */
 export async function saveItemAction(formData: FormData): Promise<ActionResult> {
   try {
-    await ensureAdmin();
+    await ensureAdmin(formData.get("access_token") as string | null);
     const admin = createSupabaseAdminClient();
 
     const id = (formData.get("id") as string) || null;
@@ -148,10 +149,11 @@ export async function saveItemAction(formData: FormData): Promise<ActionResult> 
 /** Xóa một mục nội dung. */
 export async function deleteItemAction(
   id: string,
-  room_slug: string
+  room_slug: string,
+  token?: string | null
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin();
+    await ensureAdmin(token);
     const admin = createSupabaseAdminClient();
     const { error } = await admin.from("items").delete().eq("id", id);
     if (error) throw new Error(error.message);
@@ -168,7 +170,7 @@ export async function saveSettingsAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin();
+    await ensureAdmin(formData.get("access_token") as string | null);
     const admin = createSupabaseAdminClient();
 
     const textKeys = [
@@ -218,7 +220,7 @@ export async function saveRoomAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin();
+    await ensureAdmin(formData.get("access_token") as string | null);
     const admin = createSupabaseAdminClient();
     const slug = (formData.get("slug") as string)?.trim();
     if (!slug) throw new Error("Thiếu mã phòng.");
@@ -255,9 +257,12 @@ export async function saveRoomAction(
 }
 
 /** Xóa một phòng. */
-export async function deleteRoomAction(slug: string): Promise<ActionResult> {
+export async function deleteRoomAction(
+  slug: string,
+  token?: string | null
+): Promise<ActionResult> {
   try {
-    await ensureAdmin();
+    await ensureAdmin(token);
     const admin = createSupabaseAdminClient();
     await admin.from("items").delete().eq("room_slug", slug);
     const { error } = await admin.from("rooms").delete().eq("slug", slug);

@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRoomAction } from "@/app/actions";
+import { getAccessToken } from "@/lib/supabase/client";
 import { Icon } from "@/components/icons";
 
 export function DeleteRoomButton({ slug, name }: { slug: string; name: string }) {
@@ -16,7 +17,8 @@ export function DeleteRoomButton({ slug, name }: { slug: string; name: string })
     )
       return;
     start(async () => {
-      const res = await deleteRoomAction(slug);
+      const token = await getAccessToken();
+      const res = await deleteRoomAction(slug, token);
       if (res?.error) {
         alert("Lỗi: " + res.error);
         return;

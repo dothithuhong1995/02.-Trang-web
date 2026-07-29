@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ActionResult } from "@/app/actions";
+import { getAccessToken } from "@/lib/supabase/client";
 
 /**
  * Bọc một form gọi Server Action, hiển thị thông báo THÀNH CÔNG hoặc LỖI
@@ -29,6 +30,8 @@ export function ActionForm({
     const form = e.currentTarget;
     const fd = new FormData(form);
     start(async () => {
+      const token = await getAccessToken();
+      if (token) fd.set("access_token", token);
       const res = await action(fd);
       if (res?.error) {
         setMsg({ error: res.error });
