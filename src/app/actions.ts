@@ -24,25 +24,20 @@ function createUserClient(token: string): SupabaseClient {
   );
 }
 
-/** Xác thực vé và trả về client đã đăng nhập; ném lỗi rõ ràng nếu không hợp lệ. */
+/**
+ * Trả về client "đóng vai" người dùng (gắn vé vào header). Không kiểm tra vé
+ * riêng ở đây — mọi thao tác ghi bên dưới sẽ được RLS của Supabase kiểm tra:
+ * vé hợp lệ (Admin đã đăng nhập) mới ghi được, ngược lại trả lỗi rõ ràng.
+ */
 async function requireAdminClient(
   token?: string | null
 ): Promise<SupabaseClient> {
   if (!token) {
     throw new Error(
-      "Bạn cần đăng nhập quản trị để thực hiện thao tác này. (vé=thiếu)"
+      "Bạn cần đăng nhập quản trị để thực hiện thao tác này. Vui lòng đăng nhập lại. (vé=thiếu)"
     );
   }
-  const client = createUserClient(token);
-  const { data, error } = await client.auth.getUser(token);
-  if (!data?.user) {
-    throw new Error(
-      `Phiên đăng nhập không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại. [${
-        error?.message ?? "no-user"
-      }]`
-    );
-  }
-  return client;
+  return createUserClient(token);
 }
 
 function safeName(name: string) {

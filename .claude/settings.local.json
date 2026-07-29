@@ -16,7 +16,8 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(rm -rf .next)",
-      "Bash(rm -f src/middleware.ts)"
+      "Bash(rm -f src/middleware.ts)",
+      "Bash(node -e \"console.log\\(require\\('@supabase/supabase-js/package.json'\\).version\\); console.log\\(require\\('@supabase/auth-js/package.json'\\).version\\)\")"
     ]
   }
 }
