@@ -14,12 +14,24 @@ export function createSupabaseBrowserClient() {
  * Nhờ vậy máy chủ xác thực được Admin mà không phụ thuộc cookie.
  */
 export async function getAccessToken(): Promise<string | null> {
+  // 1) Ưu tiên phiên hiện tại (tự động làm mới token)
   try {
     const supabase = createSupabaseBrowserClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
+    if (session?.access_token) {
+      try {
+        localStorage.setItem("kgvh_token", session.access_token);
+      } catch {}
+      return session.access_token;
+    }
+  } catch {
+    // rơi xuống dự phòng
+  }
+  // 2) Dự phòng: vé đã lưu lúc đăng nhập
+  try {
+    return localStorage.getItem("kgvh_token");
   } catch {
     return null;
   }

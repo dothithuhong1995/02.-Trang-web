@@ -18,7 +18,7 @@ export function LoginForm() {
     setLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -26,6 +26,12 @@ export function LoginForm() {
         setError("Email hoặc mật khẩu chưa đúng.");
         setLoading(false);
         return;
+      }
+      // Lưu "vé" đăng nhập dự phòng, để thao tác Lưu luôn có token gửi lên.
+      if (data.session?.access_token) {
+        try {
+          localStorage.setItem("kgvh_token", data.session.access_token);
+        } catch {}
       }
       router.push("/admin");
       router.refresh();
