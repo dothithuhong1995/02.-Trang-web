@@ -34,7 +34,7 @@ async function requireAdminClient(
     );
   }
   const client = createUserClient(token);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await client.auth.getUser(token);
   if (!data?.user) {
     throw new Error(
       `Phiên đăng nhập không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại. [${
