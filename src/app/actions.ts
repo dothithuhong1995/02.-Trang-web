@@ -1,13 +1,49 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { parseYouTube } from "@/lib/youtube";
 import type { MediaType } from "@/lib/types";
 
 /** Kết quả trả về của các action: rỗng = thành công, có `error` = thất bại (kèm lý do). */
 export type ActionResult = { ok?: boolean; error?: string };
+
+/**
+ * Tạo Supabase client "đóng vai" chính người dùng đang đăng nhập, bằng cách gắn
+ * access token (vé) vào header. Nhờ vậy mọi thao tác ghi được thực hiện với quyền
+ * của Admin (RLS cho phép), KHÔNG cần khóa service_role.
+ */
+function createUserClient(token: string): SupabaseClient {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    }
+  );
+}
+
+/** Xác thực vé và trả về client đã đăng nhập; ném lỗi rõ ràng nếu không hợp lệ. */
+async function requireAdminClient(
+  token?: string | null
+): Promise<SupabaseClient> {
+  if (!token) {
+    throw new Error(
+      "Bạn cần đăng nhập quản trị để thực hiện thao tác này. (vé=thiếu)"
+    );
+  }
+  const client = createUserClient(token);
+  const { data, error } = await client.auth.getUser();
+  if (!data?.user) {
+    throw new Error(
+      `Phiên đăng nhập không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại. [${
+        error?.message ?? "no-user"
+      }]`
+    );
+  }
+  return client;
+}
 
 function safeName(name: string) {
   return name
@@ -18,20 +54,20 @@ function safeName(name: string) {
 }
 
 async function uploadToStorage(
+  client: SupabaseClient,
   file: File,
   folder: string
 ): Promise<{ url: string; type: MediaType }> {
-  const admin = createSupabaseAdminClient();
   const path = `${folder}/${Date.now()}-${safeName(file.name)}`;
   const arrayBuffer = await file.arrayBuffer();
-  const { error } = await admin.storage
+  const { error } = await client.storage
     .from("media")
     .upload(path, new Uint8Array(arrayBuffer), {
       contentType: file.type || "application/octet-stream",
       upsert: false,
     });
   if (error) throw new Error("Tải tệp lên thất bại: " + error.message);
-  const { data } = admin.storage.from("media").getPublicUrl(path);
+  const { data } = client.storage.from("media").getPublicUrl(path);
   const type: MediaType = file.type.startsWith("image/")
     ? "image"
     : file.type.startsWith("video/")
@@ -40,40 +76,12 @@ async function uploadToStorage(
   return { url: data.publicUrl, type };
 }
 
-/**
- * Xác thực quyền Admin. Ưu tiên "vé đăng nhập" (access token) do trình duyệt gửi
- * kèm — cách này KHÔNG phụ thuộc cookie nên tránh được lỗi cookie không tới máy chủ.
- * Nếu không có token thì dự phòng đọc phiên từ cookie.
- */
-async function ensureAdmin(token?: string | null) {
-  // 1) Xác thực bằng access token (đáng tin cậy nhất)
-  if (token) {
-    try {
-      const admin = createSupabaseAdminClient();
-      const { data } = await admin.auth.getUser(token);
-      if (data?.user) return;
-    } catch {
-      // rơi xuống dự phòng cookie
-    }
-  }
-  // 2) Dự phòng: đọc phiên từ cookie
-  try {
-    const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    if (data?.user) return;
-  } catch {
-    // bỏ qua
-  }
-  throw new Error(
-    `Bạn cần đăng nhập quản trị để thực hiện thao tác này. (vé=${token ? "có" : "thiếu"})`
-  );
-}
-
 /** Tạo mới hoặc cập nhật một mục nội dung trong phòng. */
 export async function saveItemAction(formData: FormData): Promise<ActionResult> {
   try {
-    await ensureAdmin(formData.get("access_token") as string | null);
-    const admin = createSupabaseAdminClient();
+    const db = await requireAdminClient(
+      formData.get("access_token") as string | null
+    );
 
     const id = (formData.get("id") as string) || null;
     const room_slug = formData.get("room_slug") as string;
@@ -93,7 +101,7 @@ export async function saveItemAction(formData: FormData): Promise<ActionResult> 
     let media_type: MediaType | undefined = undefined;
 
     if (file && file.size > 0) {
-      const up = await uploadToStorage(file, `${room_slug}/${section}`);
+      const up = await uploadToStorage(db, file, `${room_slug}/${section}`);
       media_url = up.url;
       media_type = up.type;
     } else if (youtube) {
@@ -122,10 +130,10 @@ export async function saveItemAction(formData: FormData): Promise<ActionResult> 
         patch.media_type = media_type;
       }
       if (metaRaw) patch.meta = meta;
-      const { error } = await admin.from("items").update(patch).eq("id", id);
+      const { error } = await db.from("items").update(patch).eq("id", id);
       if (error) throw new Error(error.message);
     } else {
-      const { error } = await admin.from("items").insert({
+      const { error } = await db.from("items").insert({
         room_slug,
         section,
         title,
@@ -153,9 +161,8 @@ export async function deleteItemAction(
   token?: string | null
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin(token);
-    const admin = createSupabaseAdminClient();
-    const { error } = await admin.from("items").delete().eq("id", id);
+    const db = await requireAdminClient(token);
+    const { error } = await db.from("items").delete().eq("id", id);
     if (error) throw new Error(error.message);
     revalidatePath(`/phong/${room_slug}`);
     revalidatePath("/");
@@ -170,8 +177,9 @@ export async function saveSettingsAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin(formData.get("access_token") as string | null);
-    const admin = createSupabaseAdminClient();
+    const db = await requireAdminClient(
+      formData.get("access_token") as string | null
+    );
 
     const textKeys = [
       "schoolName",
@@ -198,13 +206,13 @@ export async function saveSettingsAction(
     for (const { field, key } of fileKeys) {
       const f = formData.get(field) as File | null;
       if (f && f.size > 0) {
-        const up = await uploadToStorage(f, "settings");
+        const up = await uploadToStorage(db, f, "settings");
         rows.push({ key, value: up.url });
       }
     }
 
     if (rows.length) {
-      const { error } = await admin.from("settings").upsert(rows);
+      const { error } = await db.from("settings").upsert(rows);
       if (error) throw new Error(error.message);
     }
 
@@ -220,8 +228,9 @@ export async function saveRoomAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin(formData.get("access_token") as string | null);
-    const admin = createSupabaseAdminClient();
+    const db = await requireAdminClient(
+      formData.get("access_token") as string | null
+    );
     const slug = (formData.get("slug") as string)?.trim();
     if (!slug) throw new Error("Thiếu mã phòng.");
     const row = {
@@ -239,14 +248,14 @@ export async function saveRoomAction(
     let banner_url: string | undefined;
     const bf = formData.get("bannerFile") as File | null;
     if (bf && bf.size > 0) {
-      const up = await uploadToStorage(bf, `banners`);
+      const up = await uploadToStorage(db, bf, `banners`);
       banner_url = up.url;
     }
 
     const payload: Record<string, unknown> = { ...row };
     if (banner_url) payload.banner_url = banner_url;
 
-    const { error } = await admin.from("rooms").upsert(payload);
+    const { error } = await db.from("rooms").upsert(payload);
     if (error) throw new Error(error.message);
     revalidatePath("/", "layout");
     revalidatePath(`/phong/${slug}`);
@@ -262,10 +271,9 @@ export async function deleteRoomAction(
   token?: string | null
 ): Promise<ActionResult> {
   try {
-    await ensureAdmin(token);
-    const admin = createSupabaseAdminClient();
-    await admin.from("items").delete().eq("room_slug", slug);
-    const { error } = await admin.from("rooms").delete().eq("slug", slug);
+    const db = await requireAdminClient(token);
+    await db.from("items").delete().eq("room_slug", slug);
+    const { error } = await db.from("rooms").delete().eq("slug", slug);
     if (error) throw new Error(error.message);
     revalidatePath("/", "layout");
     return { ok: true };
