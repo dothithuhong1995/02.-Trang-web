@@ -16,11 +16,10 @@ export function AdminCookieSync() {
     getAccessToken().then((token) => {
       if (cancelled) return;
       const has = document.cookie.includes("kgvh_admin=1");
+      // CHỈ đặt dấu khi có vé; KHÔNG bao giờ tự xóa (tránh nhấp nháy/mất nút).
+      // Dấu chỉ bị gỡ khi bấm Đăng xuất.
       if (token && !has) {
         document.cookie = "kgvh_admin=1; path=/; max-age=2592000; samesite=lax";
-        router.refresh();
-      } else if (!token && has) {
-        document.cookie = "kgvh_admin=; path=/; max-age=0; samesite=lax";
         router.refresh();
       }
     });
