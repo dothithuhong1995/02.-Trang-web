@@ -37,6 +37,7 @@ export function Room7({
           body: cat.key === "tho",
           bodyLabel: "Nội dung",
           media,
+          fixedMeta: { category: cat.key },
         };
         return (
           <section

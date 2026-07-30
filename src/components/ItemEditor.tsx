@@ -24,6 +24,8 @@ export interface EditorConfig {
   year?: boolean;
   /** Thứ tự mặc định khi tạo mới */
   nextOrder?: number;
+  /** Dữ liệu meta cố định gắn kèm mọi mục (vd: { category: "sach" } cho Thư viện). */
+  fixedMeta?: Record<string, unknown>;
 }
 
 /** Ô "+" để thêm mục mới (chỉ hiện với Admin). */
@@ -136,11 +138,15 @@ function EditorModal({
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
-    // Gộp năm vào meta nếu có
+    // Gộp meta: giữ meta cũ + meta cố định (vd danh mục Thư viện) + năm (nếu có).
+    const mergedMeta: Record<string, unknown> = {
+      ...meta,
+      ...(config.fixedMeta ?? {}),
+    };
     if (config.year) {
-      const y = String(fd.get("_year") || "");
-      fd.set("meta", JSON.stringify({ ...meta, year: y }));
+      mergedMeta.year = String(fd.get("_year") || "");
     }
+    fd.set("meta", JSON.stringify(mergedMeta));
     start(async () => {
       const token = await getAccessToken();
       if (token) fd.set("access_token", token);
