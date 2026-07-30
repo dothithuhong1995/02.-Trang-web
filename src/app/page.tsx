@@ -18,7 +18,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <AdminBar isAdmin={admin} />
+      <AdminBar />
       <SiteHeader settings={settings} rooms={rooms} isAdmin={admin} />
 
       <main>

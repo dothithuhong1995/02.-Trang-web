@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { getSettings } from "@/lib/data";
-import { AdminCookieSync } from "@/components/AdminCookieSync";
+import { AdminProvider } from "@/components/AdminProvider";
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -34,8 +34,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={beVietnam.variable}>
       <body>
-        <AdminCookieSync />
-        {children}
+        <AdminProvider>{children}</AdminProvider>
       </body>
     </html>
   );

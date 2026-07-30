@@ -1,4 +1,7 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { SectionHeading } from "@/components/shared";
 import { Icon } from "@/components/icons";
 import { VideoBox } from "@/components/Media";
@@ -6,12 +9,11 @@ import { AddItemSlot, EditControls } from "@/components/ItemEditor";
 
 export function Room1({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const timeline = grouped["timeline"] ?? [];
   const journey = grouped["journey"] ?? [];
   const video = (grouped["video"] ?? [])[0];

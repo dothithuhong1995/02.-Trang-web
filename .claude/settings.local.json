@@ -20,7 +20,9 @@
       "Bash(node -e \"console.log\\(require\\('@supabase/supabase-js/package.json'\\).version\\); console.log\\(require\\('@supabase/auth-js/package.json'\\).version\\)\")",
       "Bash(curl -sI \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
       "Bash(curl -s \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
-      "Bash(curl -s -H \"Cookie: kgvh_admin=1\" \"https://02-trang-web.vercel.app/phong/cau-chuyen\")"
+      "Bash(curl -s -H \"Cookie: kgvh_admin=1\" \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/phong/cau-chuyen)",
+      "Bash(curl -s http://localhost:3000/phong/cau-chuyen)"
     ]
   }
 }

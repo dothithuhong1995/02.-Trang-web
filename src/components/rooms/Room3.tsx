@@ -1,16 +1,18 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { Icon } from "@/components/icons";
 import { ItemImage } from "@/components/Media";
 import { EditControls } from "@/components/ItemEditor";
 
 export function Room3({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const teachings = grouped["teaching"] ?? [];
 
   return (

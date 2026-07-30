@@ -1,4 +1,7 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { SectionHeading } from "@/components/shared";
 import { ItemImage, VideoBox, EmptyNote } from "@/components/Media";
 import { Icon } from "@/components/icons";
@@ -20,12 +23,11 @@ const DEFAULT_QUOTE =
 
 export function Room4({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const places = grouped["place"] ?? [];
   const video = (grouped["video"] ?? [])[0];
   const quote = (grouped["quote"] ?? [])[0];

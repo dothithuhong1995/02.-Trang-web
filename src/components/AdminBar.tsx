@@ -1,7 +1,11 @@
-import Link from "next/link";
+"use client";
 
-/** Thanh nhắc chế độ quản trị, chỉ hiện khi Admin đã đăng nhập. */
-export function AdminBar({ isAdmin }: { isAdmin: boolean }) {
+import Link from "next/link";
+import { useIsAdmin } from "./AdminProvider";
+
+/** Thanh nhắc chế độ quản trị, tự hiện khi trình duyệt có phiên Admin. */
+export function AdminBar() {
+  const isAdmin = useIsAdmin();
   if (!isAdmin) return null;
   return (
     <div className="bg-flag-darkred text-white">

@@ -1,4 +1,7 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { LIBRARY_CATEGORIES } from "@/lib/seed";
 import { Icon } from "@/components/icons";
 import { AddItemSlot, EditControls } from "@/components/ItemEditor";
@@ -11,12 +14,11 @@ function mediaForCategory(key: string): "file" | "video" | "none" {
 
 export function Room7({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const library = grouped["library"] ?? [];
 
   return (

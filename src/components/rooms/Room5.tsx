@@ -1,4 +1,7 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { SectionHeading } from "@/components/shared";
 import { ItemImage, MediaTile, EmptyNote } from "@/components/Media";
 import { Icon } from "@/components/icons";
@@ -33,12 +36,11 @@ const STORY = {
 
 export function Room5({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const photos = grouped["good_deed_photo"] ?? [];
   const diary = grouped["diary"] ?? [];
   const stories = grouped["story_media"] ?? [];

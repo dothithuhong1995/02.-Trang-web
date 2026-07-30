@@ -1,4 +1,7 @@
+"use client";
+
 import type { Item, Room } from "@/lib/types";
+import { useIsAdmin } from "@/components/AdminProvider";
 import { SectionHeading } from "@/components/shared";
 import { MediaTile, EmptyNote } from "@/components/Media";
 import { AddItemSlot, EditControls } from "@/components/ItemEditor";
@@ -14,12 +17,11 @@ const CONFIG = {
 
 export function Room6({
   grouped,
-  isAdmin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
+  const isAdmin = useIsAdmin();
   const items = grouped["display"] ?? [];
 
   return (

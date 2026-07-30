@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getItemsGrouped, getRoom } from "@/lib/data";
-import { isAdmin } from "@/lib/auth";
 import { RoomBanner } from "@/components/Media";
 import { HomeButton } from "@/components/shared";
 import { AdminBar } from "@/components/AdminBar";
@@ -34,7 +33,6 @@ const ROOM_COMPONENTS: Record<
   (props: {
     room: Room;
     grouped: Record<string, Item[]>;
-    isAdmin: boolean;
   }) => React.ReactNode
 > = {
   "tieu-su": Room1,
@@ -52,10 +50,9 @@ export default async function RoomPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [room, grouped, admin] = await Promise.all([
+  const [room, grouped] = await Promise.all([
     getRoom(slug),
     getItemsGrouped(slug),
-    isAdmin(),
   ]);
 
   if (!room) notFound();
@@ -64,14 +61,14 @@ export default async function RoomPage({
 
   return (
     <>
-      <AdminBar isAdmin={admin} />
+      <AdminBar />
       <RoomBanner src={room.bannerUrl} alt={room.title.replace(/\n/g, " ")} />
 
       <main className="mx-auto max-w-7xl px-3 py-6">
         {Content ? (
-          <Content room={room} grouped={grouped} isAdmin={admin} />
+          <Content room={room} grouped={grouped} />
         ) : (
-          <GenericRoom room={room} grouped={grouped} isAdmin={admin} />
+          <GenericRoom room={room} grouped={grouped} />
         )}
         <HomeButton />
       </main>
@@ -82,11 +79,9 @@ export default async function RoomPage({
 /** Bố cục mặc định cho phòng do Admin tự thêm (chưa có bố cục riêng). */
 function GenericRoom({
   grouped,
-  isAdmin: admin,
 }: {
   room: Room;
   grouped: Record<string, Item[]>;
-  isAdmin: boolean;
 }) {
   const items = grouped["display"] ?? [];
   return (
