@@ -8,11 +8,86 @@ import { useIsAdmin } from "@/components/AdminProvider";
 import { AddItemSlot, EditControls } from "@/components/ItemEditor";
 import { EmptyNote } from "@/components/Media";
 import { Icon } from "@/components/icons";
+import { parseYouTube } from "@/lib/youtube";
 
 function mediaForCategory(key: string): "file" | "video" | "none" {
   if (key === "bai-hat") return "video";
   if (key === "tho") return "none";
   return "file";
+}
+
+/** Hiển thị nội dung tài liệu ngay trên trang (PDF nhúng, ảnh, video...). */
+function LibraryContent({ item }: { item: Item }) {
+  const url = item.media_url;
+  if (!url || item.media_type === "none") return null;
+  const lower = url.toLowerCase();
+  const isImage =
+    item.media_type === "image" || /\.(jpg|jpeg|png|gif|webp|svg)$/.test(lower);
+  const isPdf = /\.pdf($|\?)/.test(lower);
+
+  if (item.media_type === "youtube") {
+    const yt = parseYouTube(url);
+    return (
+      <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg bg-black">
+        <iframe
+          src={yt.embed ?? url}
+          title={item.title ?? "Video"}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="h-full w-full"
+        />
+      </div>
+    );
+  }
+
+  if (item.media_type === "video") {
+    return (
+      <video controls className="mt-3 w-full rounded-lg bg-black" src={url} />
+    );
+  }
+
+  if (isImage) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt={item.title ?? "Hình ảnh"}
+        className="mt-3 max-h-[600px] w-full rounded-lg object-contain"
+      />
+    );
+  }
+
+  if (isPdf) {
+    return (
+      <div className="mt-3">
+        <iframe
+          src={url}
+          title={item.title ?? "Tài liệu PDF"}
+          className="h-[600px] w-full rounded-lg border border-gold/30"
+        />
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="link-more mt-2"
+        >
+          <Icon name="arrow-right" className="h-4 w-4" /> Mở toàn màn hình
+        </a>
+      </div>
+    );
+  }
+
+  // Tệp khác (Word, Excel...) — không xem trực tiếp được, cho tải xuống.
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="link-more mt-3"
+    >
+      <Icon name="folder" className="h-4 w-4" /> Tải xuống
+    </a>
+  );
 }
 
 export function Room7({
@@ -110,11 +185,21 @@ export function Room7({
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {isAdmin && (
+        <div className="mb-4">
+          <AddItemSlot
+            config={{ ...config, nextOrder: items.length + 1 }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-flag-red/50 py-3 text-sm font-bold text-flag-red hover:bg-cream-dark"
+            label="+ Thêm tài liệu"
+          />
+        </div>
+      )}
+
+      <div className="space-y-5">
         {items.map((it) => (
           <article
             key={it.id}
-            className="relative flex flex-col rounded-xl border border-gold/30 bg-white/80 p-4 shadow-soft"
+            className="relative rounded-xl border border-gold/30 bg-white/80 p-4 shadow-soft"
           >
             {isAdmin && (
               <EditControls
@@ -122,39 +207,15 @@ export function Room7({
                 item={it}
               />
             )}
-            <p className="pr-12 font-bold text-[#3a2410]">{it.title}</p>
+            <p className="pr-16 text-lg font-bold text-flag-red">{it.title}</p>
             {it.body && (
-              <p className="mt-1 whitespace-pre-line text-sm text-[#6a4a1a]">
+              <p className="mt-1 whitespace-pre-line text-[#3a2410]">
                 {it.body}
               </p>
             )}
-            {it.media_url && it.media_type !== "none" && (
-              <a
-                href={it.media_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link-more mt-2"
-              >
-                {it.media_type === "youtube" ? (
-                  <>
-                    <Icon name="play" className="h-4 w-4" /> Nghe / Xem
-                  </>
-                ) : (
-                  <>
-                    <Icon name="folder" className="h-4 w-4" /> Tải xuống
-                  </>
-                )}
-              </a>
-            )}
+            <LibraryContent item={it} />
           </article>
         ))}
-
-        {isAdmin && (
-          <AddItemSlot
-            config={{ ...config, nextOrder: items.length + 1 }}
-            label="Thêm tài liệu"
-          />
-        )}
 
         {!isAdmin && items.length === 0 && (
           <EmptyNote text="Chưa có tài liệu trong mục này." />
