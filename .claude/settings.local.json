@@ -18,7 +18,9 @@
       "Bash(rm -rf .next)",
       "Bash(rm -f src/middleware.ts)",
       "Bash(node -e \"console.log\\(require\\('@supabase/supabase-js/package.json'\\).version\\); console.log\\(require\\('@supabase/auth-js/package.json'\\).version\\)\")",
-      "Bash(curl -sI \"https://02-trang-web.vercel.app/phong/cau-chuyen\")"
+      "Bash(curl -sI \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
+      "Bash(curl -s \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
+      "Bash(curl -s -H \"Cookie: kgvh_admin=1\" \"https://02-trang-web.vercel.app/phong/cau-chuyen\")"
     ]
   }
 }
