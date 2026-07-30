@@ -26,7 +26,10 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://02-trang-web.vercel.app/\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://02-trang-web.vercel.app/phong/cau-chuyen\")",
       "Bash(curl -s \"https://02-trang-web.vercel.app/phong/nam-dieu\")",
-      "Bash(curl -s \"https://02-trang-web.vercel.app/phong/tieu-su\")"
+      "Bash(curl -s \"https://02-trang-web.vercel.app/phong/tieu-su\")",
+      "Bash(curl -s \"http://localhost:3000/phong/thu-vien-so\")",
+      "Bash(curl -s \"http://localhost:3000/phong/thu-vien-so?muc=sach\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:3000/phong/thu-vien-so\")"
     ]
   }
 }
