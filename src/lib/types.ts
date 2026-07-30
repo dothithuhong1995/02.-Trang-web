@@ -16,6 +16,8 @@ export interface Item {
   meta: Record<string, unknown>;
   sort_order: number;
   created_at: string;
+  /** Thời điểm đưa vào thùng rác. NULL/không có = đang hiển thị. */
+  deleted_at?: string | null;
 }
 
 /** Thông tin cấu hình chung của website (Admin chỉnh trong trang quản trị). */

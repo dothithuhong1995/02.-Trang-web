@@ -103,6 +103,25 @@ export async function getItems(
     if (section) query = query.eq("section", section);
     const { data, error } = await query;
     if (error || !data) return [];
+    // Ẩn các mục đang trong thùng rác (lọc phía JS để an toàn kể cả khi cột
+    // deleted_at chưa được thêm vào CSDL).
+    return (data as unknown as Item[]).filter((i) => !i.deleted_at);
+  } catch {
+    return [];
+  }
+}
+
+/** Lấy các mục trong thùng rác (đã xóa mềm). Dùng cho trang Thùng rác. */
+export async function getTrashedItems(): Promise<Item[]> {
+  if (!supabaseConfigured()) return [];
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("items")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    if (error || !data) return [];
     return data as unknown as Item[];
   } catch {
     return [];

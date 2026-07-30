@@ -17,6 +17,9 @@ export function AdminBar() {
         <Link href="/admin" className="ml-auto underline hover:text-gold-light">
           Bảng điều khiển
         </Link>
+        <Link href="/admin/thung-rac" className="underline hover:text-gold-light">
+          Thùng rác
+        </Link>
         <Link href="/admin/dang-xuat" className="underline hover:text-gold-light">
           Đăng xuất
         </Link>

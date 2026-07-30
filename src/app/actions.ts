@@ -157,11 +157,68 @@ export async function deleteItemAction(
 ): Promise<ActionResult> {
   try {
     const db = await requireAdminClient(token);
-    const { error } = await db.from("items").delete().eq("id", id);
+    // Xóa mềm: chuyển vào thùng rác thay vì xóa hẳn.
+    const { error } = await db
+      .from("items")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", id);
     if (error) throw new Error(error.message);
     revalidatePath(`/phong/${room_slug}`);
     revalidatePath("/");
     return { ok: true };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+/** Khôi phục một mục từ thùng rác. */
+export async function restoreItemAction(
+  id: string,
+  token?: string | null
+): Promise<ActionResult> {
+  try {
+    const db = await requireAdminClient(token);
+    const { error } = await db
+      .from("items")
+      .update({ deleted_at: null })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+/** Xóa vĩnh viễn một mục trong thùng rác (không khôi phục được). */
+export async function purgeItemAction(
+  id: string,
+  token?: string | null
+): Promise<ActionResult> {
+  try {
+    const db = await requireAdminClient(token);
+    const { error } = await db.from("items").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+/** Lấy danh sách các mục trong thùng rác (cần quyền Admin). */
+export async function listTrashAction(
+  token?: string | null
+): Promise<{ items?: import("@/lib/types").Item[]; error?: string }> {
+  try {
+    const db = await requireAdminClient(token);
+    const { data, error } = await db
+      .from("items")
+      .select("*")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []) as import("@/lib/types").Item[] };
   } catch (e) {
     return { error: (e as Error).message };
   }

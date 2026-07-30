@@ -36,7 +36,8 @@ create table if not exists public.items (
   media_type text not null default 'none',
   meta       jsonb not null default '{}'::jsonb,
   sort_order int not null default 0,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  deleted_at timestamptz
 );
 
 create index if not exists items_room_section_idx

@@ -35,6 +35,9 @@ export default async function AdminDashboard() {
             <Link href="/" className="underline hover:text-gold-light">
               Xem website
             </Link>
+            <Link href="/admin/thung-rac" className="underline hover:text-gold-light">
+              Thùng rác
+            </Link>
             <Link
               href="/admin/dang-xuat"
               className="rounded-full bg-white/15 px-3 py-1.5 hover:bg-white/25"
