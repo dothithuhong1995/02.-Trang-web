@@ -33,6 +33,8 @@ export function LoginForm() {
           localStorage.setItem("kgvh_token", data.session.access_token);
         } catch {}
       }
+      // Đặt "dấu" đăng nhập để máy chủ hiện giao diện quản trị ở mọi trang.
+      document.cookie = "kgvh_admin=1; path=/; max-age=2592000; samesite=lax";
       router.push("/admin");
       router.refresh();
     } catch {

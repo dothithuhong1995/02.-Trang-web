@@ -10,5 +10,8 @@ export async function GET(request: Request) {
       // bỏ qua
     }
   }
-  return NextResponse.redirect(new URL("/", request.url));
+  const res = NextResponse.redirect(new URL("/", request.url));
+  // Xóa "dấu" đăng nhập để ẩn giao diện quản trị.
+  res.cookies.set("kgvh_admin", "", { path: "/", maxAge: 0 });
+  return res;
 }
