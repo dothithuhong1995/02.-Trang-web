@@ -7,6 +7,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { AdminBar } from "@/components/AdminBar";
 import { LotusDivider } from "@/components/shared";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [settings, rooms, admin] = await Promise.all([
     getSettings(),

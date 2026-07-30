@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getItemsGrouped, getRoom, getRooms } from "@/lib/data";
+import { getItemsGrouped, getRoom } from "@/lib/data";
 import { isAdmin } from "@/lib/auth";
 import { RoomBanner } from "@/components/Media";
 import { HomeButton } from "@/components/shared";
@@ -14,10 +14,9 @@ import { Room6 } from "@/components/rooms/Room6";
 import { Room7 } from "@/components/rooms/Room7";
 import type { Item, Room } from "@/lib/types";
 
-export async function generateStaticParams() {
-  const rooms = await getRooms();
-  return rooms.map((r) => ({ slug: r.slug }));
-}
+// Dựng động theo từng request để nút thêm/sửa (chỉ hiện khi Admin đăng nhập)
+// luôn xuất hiện đúng theo phiên hiện tại.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
