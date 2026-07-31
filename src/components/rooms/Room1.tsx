@@ -40,15 +40,26 @@ export function Room1({
                       heading: "Sửa mốc thời gian",
                       year: true,
                       body: true,
-                      media: "none",
+                      media: "image",
                     }}
                     item={t}
                   />
                 )}
                 <span className="text-lg font-extrabold text-flag-red">{year}</span>
-                <span className="my-2 flex h-14 w-14 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
-                  <Icon name={icon} className="h-7 w-7" />
-                </span>
+                {t.media_url ? (
+                  <span className="my-2 block h-16 w-16 overflow-hidden rounded-full border-2 border-flag-red shadow-soft">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={t.media_url}
+                      alt={t.body ?? ""}
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span className="my-2 flex h-14 w-14 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
+                    <Icon name={icon} className="h-7 w-7" />
+                  </span>
+                )}
                 <p className="text-xs font-medium leading-snug text-[#4a2f10]">
                   {t.body}
                 </p>
@@ -64,7 +75,7 @@ export function Room1({
                   heading: "Thêm mốc thời gian",
                   year: true,
                   body: true,
-                  media: "none",
+                  media: "image",
                   nextOrder: timeline.length + 1,
                 }}
                 className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed border-gold/60 text-flag-red hover:bg-cream-dark"
