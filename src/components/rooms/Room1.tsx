@@ -47,7 +47,7 @@ export function Room1({
                 )}
                 <span className="text-lg font-extrabold text-flag-red">{year}</span>
                 {t.media_url ? (
-                  <span className="my-2 block h-16 w-16 overflow-hidden rounded-full border-2 border-flag-red shadow-soft">
+                  <span className="my-2 block h-28 w-28 overflow-hidden rounded-full border-[3px] border-flag-red shadow-soft">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={t.media_url}
@@ -56,8 +56,8 @@ export function Room1({
                     />
                   </span>
                 ) : (
-                  <span className="my-2 flex h-14 w-14 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
-                    <Icon name={icon} className="h-7 w-7" />
+                  <span className="my-2 flex h-20 w-20 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
+                    <Icon name={icon} className="h-10 w-10" />
                   </span>
                 )}
                 <p className="text-xs font-medium leading-snug text-[#4a2f10]">
