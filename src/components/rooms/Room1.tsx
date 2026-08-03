@@ -30,7 +30,7 @@ export function Room1({
             return (
               <div
                 key={t.id}
-                className="relative flex min-w-[150px] flex-col items-center text-center lg:min-w-0"
+                className="relative flex min-w-[175px] flex-col items-center text-center lg:min-w-0"
               >
                 {isAdmin && (
                   <EditControls
@@ -47,7 +47,7 @@ export function Room1({
                 )}
                 <span className="text-lg font-extrabold text-flag-red">{year}</span>
                 {t.media_url ? (
-                  <span className="my-2 block h-28 w-28 overflow-hidden rounded-full border-[3px] border-flag-red shadow-soft">
+                  <span className="my-2 block h-36 w-36 overflow-hidden rounded-full border-[3px] border-flag-red shadow-soft">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={t.media_url}
@@ -56,8 +56,8 @@ export function Room1({
                     />
                   </span>
                 ) : (
-                  <span className="my-2 flex h-20 w-20 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
-                    <Icon name={icon} className="h-10 w-10" />
+                  <span className="my-2 flex h-24 w-24 items-center justify-center rounded-full border-2 border-flag-red bg-white text-flag-red shadow-soft">
+                    <Icon name={icon} className="h-12 w-12" />
                   </span>
                 )}
                 <p className="text-xs font-medium leading-snug text-[#4a2f10]">
@@ -67,7 +67,7 @@ export function Room1({
             );
           })}
           {isAdmin && (
-            <div className="flex min-w-[150px] items-center justify-center lg:min-w-0">
+            <div className="flex min-w-[175px] items-center justify-center lg:min-w-0">
               <AddItemSlot
                 config={{
                   roomSlug: "tieu-su",
